@@ -243,19 +243,20 @@ a{text-decoration:none;color:inherit}
       <div class="c-badge">Phase 1</div>
       <span class="c-arr">&#8594;</span>
     </div>
-    <div class="card dim">
-      <span class="c-icon">&#128202;</span>
-      <div class="c-tag">Returns</div>
-      <div class="c-title">IRR / XIRR Calculator</div>
-      <div class="c-desc">Calculate the true internal rate of return on any insurance or investment product.</div>
-      <div class="c-badge">Coming soon</div>
+    <div class="card" onclick="openTool('sip')">
+      <span class="c-icon">&#9878;&#65039;</span>
+      <div class="c-tag">Smart comparison</div>
+      <div class="c-title">SIP vs Participating Life Plan</div>
+      <div class="c-desc">Mutual fund or participating insurance? See the real numbers side by side — corpus, IRR, tax impact and life cover — and make an informed choice.</div>
+      <div class="c-badge">New</div>
+      <span class="c-arr">&#8594;</span>
     </div>
-    <div class="card dim">
+    <div class="card" onclick="openTool('cat')">
       <span class="c-icon">&#129309;</span>
-      <div class="c-tag">Recommendation</div>
+      <div class="c-tag">Guidance</div>
       <div class="c-title">Product Category Finder</div>
-      <div class="c-desc">Tell us your goal. Get the right product category recommendation, not a specific insurer pitch.</div>
-      <div class="c-badge">Coming soon</div>
+      <div class="c-desc">Tell us your goal. Get the right product category matched to your need, without a specific product pitch.</div>
+      <span class="c-arr">&#8594;</span>
     </div>
   </div>
 
@@ -485,6 +486,151 @@ a{text-decoration:none;color:inherit}
   </div>
 </div>
 
+
+<!-- SIP vs PARTICIPATING PLAN SCREEN -->
+<div id="sSip" class="screen">
+  <div class="box">
+    <div class="sec">
+      <div class="sec-title">Your investment details</div>
+      <div class="fg">
+        <div class="f"><label>Monthly investment amount (&#8377;)</label>
+          <input type="number" id="s-mon" value="3000"/>
+          <span class="f-hint">This same amount goes into MF SIP and the insurance premium</span>
+        </div>
+        <div class="f"><label>Premium payment term (years)</label>
+          <div class="sl-row"><input type="range" id="s-ppt" min="5" max="20" value="10" oninput="sv('sPptV',this.value+' yrs')"/><span class="sl-val" id="sPptV">10 yrs</span></div>
+        </div>
+        <div class="f"><label>Policy and comparison term (years)</label>
+          <div class="sl-row"><input type="range" id="s-term" min="15" max="50" value="50" oninput="sv('sTermV',this.value+' yrs')"/><span class="sl-val" id="sTermV">50 yrs</span></div>
+        </div>
+        <div class="f"><label>Your age</label>
+          <div class="sl-row"><input type="range" id="s-age" min="18" max="55" value="35" oninput="sv('sAgeV',this.value+' yrs')"/><span class="sl-val" id="sAgeV">35 yrs</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-title">Participating plan illustration inputs</div>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.5">These are the illustrated maturity values from your benefit illustration document. Enter the values for your specific quote. The tool will calculate IRR from these numbers.</p>
+      <div class="fg">
+        <div class="f"><label>Sum assured (&#8377;)</label><input type="number" id="s-sa" value="343692"/></div>
+        <div class="f"><label>Illustrated maturity at 8% bonus (&#8377;)</label><input type="number" id="s-mat8" value="5019310"/></div>
+        <div class="f"><label>Illustrated maturity at 4% bonus (&#8377;)</label><input type="number" id="s-mat4" value="1022626"/></div>
+        <div class="f"><label>Annual premium (&#8377;)</label><input type="number" id="s-ann" value="36000"/></div>
+      </div>
+    </div>
+    <div class="sec"><button class="btn-go" onclick="calcSip()">Compare now &#8594;</button></div>
+  </div>
+
+  <div class="res" id="sipRes">
+    <div class="diag"><div class="diag-lbl">Comparison diagnosis</div><div class="diag-txt" id="sipDiag"></div></div>
+
+    <!-- SIDE BY SIDE COMPARISON TABLE -->
+    <div id="sipTable" style="margin-bottom:12px"></div>
+
+    <!-- IRR PANEL -->
+    <div class="box" id="sipIrr" style="margin-bottom:12px">
+      <div class="sec">
+        <div class="sec-title">True return on the participating plan</div>
+        <div class="rg" id="sipIrrGrid"></div>
+        <div style="margin-top:12px;padding:12px;background:#F0FDF4;border-radius:9px;border:1px solid #BBF7D0">
+          <div style="font-size:11px;font-weight:700;color:#166534;margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">Why this matters</div>
+          <div id="sipIrrNote" style="font-size:12px;color:#166534;line-height:1.6"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WHAT YOU ARE ACTUALLY CHOOSING -->
+    <div class="box">
+      <div class="sec">
+        <div class="sec-title">What you are actually choosing between</div>
+        <div id="sipChoice" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"></div>
+      </div>
+    </div>
+
+    <!-- HONEST VERDICT -->
+    <div style="background:var(--navy);border-radius:var(--radius);padding:18px;margin-bottom:12px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--gold);margin-bottom:6px">Honest verdict</div>
+      <div id="sipVerdict" style="font-size:13px;font-weight:600;color:#fff;line-height:1.6"></div>
+    </div>
+
+    <p style="font-size:10px;color:var(--muted);line-height:1.6;margin-bottom:14px">Disclaimer: Participating plan values are illustrated at 4% and 8% bonus scenarios as per IRDAI illustration norms and are not guaranteed. Mutual fund returns are assumed for illustration only and are not guaranteed. Past performance does not guarantee future results. This tool is for educational and comparison purposes only. Consult a licensed advisor before making any financial decision.</p>
+  </div>
+
+  <div class="wa-box" id="sipWa">
+    <div class="wa-box-title">Want to discuss which option suits your financial goals?</div>
+    <div class="wa-box-sub">Your comparison numbers go straight into the WhatsApp message.</div>
+    <div id="sipWaForm">
+      <div class="wa-fg">
+        <div class="f"><label>Full name *</label><input type="text" id="sw-n" placeholder="Rahul Sharma"/></div>
+        <div class="f"><label>Phone *</label><input type="tel" id="sw-p" placeholder="+91 98765 43210"/></div>
+      </div>
+      <button class="btn-wa" onclick="subSipWa()">&#128172; Submit and open WhatsApp</button>
+    </div>
+    <div class="wa-ok" id="sipWaOk"><div class="wa-ok-ico">&#9989;</div><p><strong>Opening WhatsApp</strong> with your comparison numbers.</p></div>
+  </div>
+  <div class="act" id="sipAct" style="display:none">
+    <button class="btn-sec" onclick="goHome()">&#8592; All tools</button>
+  </div>
+</div>
+
+<!-- PRODUCT CATEGORY FINDER SCREEN -->
+<div id="sCat" class="screen">
+  <div class="box">
+    <div class="sec">
+      <div class="sec-title">What are you trying to achieve?</div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.5">Select your primary goal. The tool will match you to the right category of insurance product. No specific insurer is recommended.</p>
+      <div id="catGoals" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px"></div>
+    </div>
+    <div class="sec">
+      <div class="sec-title">Your situation</div>
+      <div class="fg">
+        <div class="f"><label>Age</label>
+          <div class="sl-row"><input type="range" id="c-age" min="18" max="65" value="35" oninput="sv('cAgeV',this.value+' yrs')"/><span class="sl-val" id="cAgeV">35 yrs</span></div>
+        </div>
+        <div class="f"><label>Dependants</label>
+          <div class="sl-row"><input type="range" id="c-dep" min="0" max="6" value="2" oninput="sv('cDepV',this.value)"/><span class="sl-val" id="cDepV">2</span></div>
+        </div>
+        <div class="f"><label>Investment horizon</label>
+          <select id="c-hor">
+            <option value="short">Short term (under 5 years)</option>
+            <option value="medium" selected>Medium term (5-15 years)</option>
+            <option value="long">Long term (15+ years)</option>
+          </select>
+        </div>
+        <div class="f"><label>Risk comfort</label>
+          <select id="c-risk">
+            <option value="low">Low — I want certainty</option>
+            <option value="medium" selected>Medium — some risk is fine</option>
+            <option value="high">High — I can handle volatility</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="sec"><button class="btn-go" onclick="calcCat()">Find the right product category &#8594;</button></div>
+  </div>
+
+  <div class="res" id="catRes">
+    <div class="diag"><div class="diag-lbl">Product match</div><div class="diag-txt" id="catDiag"></div></div>
+    <div id="catCards" style="margin-bottom:12px"></div>
+  </div>
+
+  <div class="wa-box" id="catWa">
+    <div class="wa-box-title">Want to explore the right product for your situation?</div>
+    <div class="wa-box-sub">Your goal and profile go straight into the WhatsApp message.</div>
+    <div id="catWaForm">
+      <div class="wa-fg">
+        <div class="f"><label>Full name *</label><input type="text" id="cw-n" placeholder="Rahul Sharma"/></div>
+        <div class="f"><label>Phone *</label><input type="tel" id="cw-p" placeholder="+91 98765 43210"/></div>
+      </div>
+      <button class="btn-wa" onclick="subCatWa()">&#128172; Submit and open WhatsApp</button>
+    </div>
+    <div class="wa-ok" id="catWaOk"><div class="wa-ok-ico">&#9989;</div><p><strong>Opening WhatsApp</strong> with your profile.</p></div>
+  </div>
+  <div class="act" id="catAct" style="display:none">
+    <button class="btn-sec" onclick="goHome()">&#8592; All tools</button>
+  </div>
+</div>
+
 <div class="fab" id="fab"><a href="#" id="fabLink" target="_blank" rel="noopener">&#128172; Chat on WhatsApp</a></div>
 
 <script>
@@ -508,8 +654,283 @@ var TOOLS={
   hlv:{eye:'Insurance gap',name:'Insurance Gap Calculator',desc:'Based on the internationally recognised Human Life Value method.'},
   ret:{eye:'Retirement planning',name:'Retirement Corpus Calculator',desc:'How much do you need at retirement and what monthly SIP closes the gap?'},
   edu:{eye:'Child education',name:'Child Education Planner',desc:'What will your child\'s education cost at today\'s education inflation rate?'},
-  prem:{eye:'Premium affordability',name:'Premium Affordability Check',desc:'Is your target life cover within your income budget?'}
+  prem:{eye:'Premium affordability',name:'Premium Affordability Check',desc:'Is your target life cover within your income budget?'},
+  sip:{eye:'Smart comparison',name:'SIP vs Participating Life Plan',desc:'Mutual fund or participating insurance? See the real numbers side by side — corpus, IRR, tax impact and life cover.'},
+  cat:{eye:'Product guidance',name:'Product Category Finder',desc:'Tell us your goal. Get the right category of insurance product matched to your need.'}
 };
+
+// SIP vs PARTICIPATING PLAN CALCULATOR
+var sipData={};
+
+function calcSipIrr(annPrem, ppt, term, maturity){
+  // Build cashflow array for IRR: outflows during PPT, inflow at maturity
+  var cf=[0];
+  for(var y=1;y<=ppt;y++) cf.push(-annPrem);
+  for(var y=ppt+1;y<term;y++) cf.push(0);
+  cf.push(maturity);
+  // Newton-Raphson
+  var r=0.06;
+  for(var i=0;i<500;i++){
+    var npv=0,dnpv=0;
+    for(var t=0;t<cf.length;t++){
+      npv+=cf[t]/Math.pow(1+r,t);
+      dnpv+=-t*cf[t]/Math.pow(1+r,t+1);
+    }
+    if(Math.abs(dnpv)<1e-10) break;
+    var nr=r-npv/dnpv;
+    if(Math.abs(nr-r)<1e-8){r=nr;break;}
+    r=nr;
+  }
+  return r;
+}
+
+function calcMfCorpus(monthlyAmt, ppt, totalTerm, rate){
+  var annual=monthlyAmt*12;
+  // SIP phase: annual contributions for ppt years
+  var corpusAtPpt=annual*(Math.pow(1+rate,ppt)-1)/rate*(1+rate);
+  // Growth phase: lump sum for remaining years
+  var remaining=totalTerm-ppt;
+  return corpusAtPpt*Math.pow(1+rate,remaining);
+}
+
+function calcSip(){
+  var monthly=parseFloat(document.getElementById('s-mon').value)||3000;
+  var ppt=parseFloat(document.getElementById('s-ppt').value)||10;
+  var term=parseFloat(document.getElementById('s-term').value)||50;
+  var age=parseFloat(document.getElementById('s-age').value)||35;
+  var sa=parseFloat(document.getElementById('s-sa').value)||343692;
+  var mat8=parseFloat(document.getElementById('s-mat8').value)||5019310;
+  var mat4=parseFloat(document.getElementById('s-mat4').value)||1022626;
+  var annPrem=parseFloat(document.getElementById('s-ann').value)||36000;
+
+  // Scale maturity values to user's actual premium
+  var scale=monthly*12/annPrem;
+  var scaledMat8=mat8*scale;
+  var scaledMat4=mat4*scale;
+  var scaledSa=sa*scale;
+  var totalPaid=monthly*12*ppt;
+
+  // Calculate IRRs
+  var irr8=calcSipIrr(monthly*12,ppt,term,scaledMat8)*100;
+  var irr4=calcSipIrr(monthly*12,ppt,term,scaledMat4)*100;
+  var preIrr8=irr8/0.7; // pre-tax equivalent at 30% bracket
+
+  // MF corpus at different rates
+  var mf8=calcMfCorpus(monthly,ppt,term,0.08);
+  var mf12=calcMfCorpus(monthly,ppt,term,0.12);
+  var mf15=calcMfCorpus(monthly,ppt,term,0.15);
+  // Post-tax MF (LTCG 10% on gains above cost)
+  var pt8=mf8-(mf8-totalPaid)*0.10;
+  var pt12=mf12-(mf12-totalPaid)*0.10;
+  var pt15=mf15-(mf15-totalPaid)*0.10;
+
+  // Find crossover: when does insurance death benefit equal MF at 12%?
+  var crossover='Never within the comparison term';
+  for(var y=ppt;y<=term;y++){
+    var mfY=calcMfCorpus(monthly,ppt,y,0.12);
+    var insY=scaledSa+(scaledMat8-scaledSa)*(y/term); // approximate death benefit growth
+    if(insY>=mfY){crossover='Around year '+y+' (at 12% MF return)';break;}
+  }
+
+  sipData={monthly,ppt,term,age,totalPaid,scaledMat8,scaledMat4,scaledSa,irr8,irr4,preIrr8,mf8,mf12,mf15,pt8,pt12,pt15,crossover,scale};
+
+  // Diagnosis
+  document.getElementById('sipDiag').innerHTML=
+    'At &#8377;'+fl(monthly)+'/month for '+ppt+' years, your total investment is <span class="g">'+fl(totalPaid)+'</span>. '
+    +'The participating plan illustrates <span class="g">'+fl(Math.round(scaledMat8))+'</span> at maturity (8% scenario), tax-free, with life cover of <span class="g">'+fl(Math.round(scaledSa))+'</span> from day one. '
+    +'A MF SIP at 12% would illustrate <span class="g">'+fl(Math.round(pt12))+'</span> post-tax. These are different choices, not directly comparable.';
+
+  // Comparison table
+  document.getElementById('sipTable').innerHTML=
+    '<div style="background:var(--white);border:1px solid var(--border);border-radius:11px;overflow:hidden;margin-bottom:0">'
+    +'<div style="display:grid;grid-template-columns:1.2fr 1fr 1fr;background:var(--navy)">'
+    +'<div style="padding:10px 12px;font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.08em">What you compare</div>'
+    +'<div style="padding:10px 12px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.08em;border-left:1px solid rgba(255,255,255,.1)">MF SIP</div>'
+    +'<div style="padding:10px 12px;font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;border-left:1px solid rgba(255,255,255,.1)">Participating Plan</div>'
+    +'</div>'
+    +sipRow('Monthly outflow',fl(monthly),fl(monthly),false)
+    +sipRow('Premium paying years',ppt+' years',ppt+' years',true)
+    +sipRow('Total paid in',fl(totalPaid),fl(totalPaid),false)
+    +sipRow('Maturity value (conservative)',fl(Math.round(pt8))+' post-tax @8%',fl(Math.round(scaledMat4))+' tax-free @4% bonus',true)
+    +sipRow('Maturity value (moderate)',fl(Math.round(pt12))+' post-tax @12%',fl(Math.round(scaledMat8))+' tax-free @8% bonus',false)
+    +sipRow('Maturity value (optimistic)',fl(Math.round(pt15))+' post-tax @15%','Not applicable — no upside beyond illustrated',true)
+    +sipRow('Life cover','\u274C None','\u2705 '+fl(Math.round(scaledSa))+' from day 1',false)
+    +sipRow('Market risk','\u26A0\uFE0F Yes — returns vary','\u2705 Non-market linked',true)
+    +sipRow('Tax on maturity','10% LTCG on gains above \u20B91L','Tax-free under Sec 10(10D)',false)
+    +sipRow('Return certainty','Not guaranteed','Illustrated, not guaranteed',true)
+    +'</div>';
+
+  // IRR panel
+  document.getElementById('sipIrrGrid').innerHTML=
+    rb('IRR at 8% bonus scenario',irr8.toFixed(2)+'%','grn','Tax-free internal rate of return')
+    +rb('IRR at 4% bonus scenario',irr4.toFixed(2)+'%','amb','Tax-free internal rate of return')
+    +rb('Pre-tax equivalent @30% bracket',preIrr8.toFixed(2)+'%','','Comparable to a '+preIrr8.toFixed(1)+'% FD or debt instrument')
+    +rb('Total premium paid',fl(totalPaid),'','Over '+ppt+' years');
+
+  document.getElementById('sipIrrNote').textContent=
+    'The participating plan\'s IRR of '+irr8.toFixed(1)+'% tax-free is equivalent to earning '+preIrr8.toFixed(1)+'% on a taxable instrument if you are in the 30% tax bracket. '
+    +'This makes it broadly comparable to a well-performing debt mutual fund or corporate bond, but with life cover included at no separate cost.';
+
+  // Choice panel
+  document.getElementById('sipChoice').innerHTML=
+    '<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:14px">'
+    +'<div style="font-size:11px;font-weight:700;color:#991B1B;text-transform:uppercase;margin-bottom:8px">If you choose MF SIP</div>'
+    +'<div style="font-size:12px;color:#7F1D1D;line-height:1.6">'
+    +'\u2705 Higher potential corpus at 12%+ returns<br/>'
+    +'\u2705 Liquidity at any point<br/>'
+    +'\u2705 Flexibility to increase SIP<br/>'
+    +'\u26A0\uFE0F Returns not guaranteed<br/>'
+    +'\u274C No life cover<br/>'
+    +'\u274C Gains taxable at maturity<br/>'
+    +'\u26A0\uFE0F Requires investment discipline for 50 years'
+    +'</div></div>'
+    +'<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:14px">'
+    +'<div style="font-size:11px;font-weight:700;color:#166534;text-transform:uppercase;margin-bottom:8px">If you choose participating plan</div>'
+    +'<div style="font-size:12px;color:#14532D;line-height:1.6">'
+    +'\u2705 Life cover from day 1<br/>'
+    +'\u2705 Non-market-linked — no volatility<br/>'
+    +'\u2705 Premiums stop after '+ppt+' years<br/>'
+    +'\u2705 Maturity is tax-free<br/>'
+    +'\u26A0\uFE0F Lower illustrated corpus than MF at 12%+<br/>'
+    +'\u26A0\uFE0F Bonus not guaranteed<br/>'
+    +'\u274C Limited liquidity in early years'
+    +'</div></div>';
+
+  // Verdict
+  var verdictText='';
+  if(pt12 > scaledMat8){
+    var diff=pt12-scaledMat8;
+    verdictText='At 12% MF returns, the mutual fund illustrates '+fl(Math.round(diff))+' more than the participating plan at maturity (post-tax vs tax-free). '
+      +'However, the participating plan provides life cover of '+fl(Math.round(scaledSa))+' from day one at no additional cost, and its return is non-market-linked. '
+      +'The question is not which gives more money — it is whether you can maintain investment discipline through 50 years of market cycles, and whether your family is protected if you cannot.';
+  } else {
+    verdictText='At the illustrated 8% bonus scenario, the participating plan\'s maturity value is comparable to or exceeds the MF corpus at moderate return assumptions. '
+      +'It also provides life cover of '+fl(Math.round(scaledSa))+' from day one. If certainty and life protection matter to you, the participating plan makes a strong case.';
+  }
+  document.getElementById('sipVerdict').textContent=verdictText;
+
+  document.getElementById('sipRes').classList.add('on');
+  document.getElementById('sipWa').classList.add('on');
+  document.getElementById('sipAct').style.display='flex';
+  fab('Hi, I used the SIP vs Participating Plan comparison tool at advisordesk.humanlifevalue.in. Monthly investment: '+fl(monthly)+'. MF at 12%: '+fl(Math.round(pt12))+' post-tax. Participating plan at 8% scenario: '+fl(Math.round(scaledMat8))+' tax-free. IRR: '+irr8.toFixed(1)+'%. Would like to discuss which option suits my goals.');
+  setTimeout(()=>document.getElementById('sipRes').scrollIntoView({behavior:'smooth',block:'start'}),100);
+}
+
+function sipRow(label,mf,ins,shade){
+  return '<div style="display:grid;grid-template-columns:1.2fr 1fr 1fr;'+(shade?'background:var(--cream)':'')+'border-top:1px solid var(--border)">'
+    +'<div style="padding:9px 12px;font-size:11px;font-weight:600;color:var(--sub)">'+(label)+'</div>'
+    +'<div style="padding:9px 12px;font-size:11px;color:var(--text);border-left:1px solid var(--border)">'+(mf)+'</div>'
+    +'<div style="padding:9px 12px;font-size:11px;font-weight:600;color:var(--navy);border-left:1px solid var(--border)">'+(ins)+'</div>'
+    +'</div>';
+}
+
+function subSipWa(){
+  var n=document.getElementById('sw-n').value.trim(),p=document.getElementById('sw-p').value.trim();
+  if(!n||!p){alert('Please enter your name and phone.');return;}
+  var d=sipData;
+  var msg='Hi, I am '+n+' ('+p+'). I used the SIP vs Participating Plan comparison at advisordesk.humanlifevalue.in. Monthly: '+fl(d.monthly)+'. MF @12% post-tax: '+fl(Math.round(d.pt12||0))+'. Participating plan @8% tax-free: '+fl(Math.round(d.scaledMat8||0))+'. IRR: '+(d.irr8||0).toFixed(1)+'%. Would like to discuss which suits my goals.';
+  document.getElementById('sipWaForm').style.display='none';
+  document.getElementById('sipWaOk').style.display='block';
+  setTimeout(()=>window.open(waUrl(msg),'_blank','noopener'),800);
+}
+
+// PRODUCT CATEGORY FINDER
+var CAT_GOALS=[
+  {id:'protection',label:'Protect my family if I die early',icon:'&#128737;&#65039;'},
+  {id:'savings',label:'Save with guaranteed returns',icon:'&#127987;&#65039;'},
+  {id:'retirement',label:'Build retirement income',icon:'&#127958;&#65039;'},
+  {id:'child',label:'Fund my child\'s education',icon:'&#127891;'},
+  {id:'wealth',label:'Grow wealth with market exposure',icon:'&#128200;'},
+  {id:'income',label:'Get regular income payouts',icon:'&#128176;'},
+  {id:'health',label:'Cover medical expenses',icon:'&#127973;&#65039;'},
+  {id:'business',label:'Protect my business / key person',icon:'&#128188;'}
+];
+
+var catSelected=null;
+
+var CAT_LOGIC={
+  protection:{low:'Term Life Insurance',medium:'Term Life Insurance',high:'Term Life Insurance',note:'Pure term insurance is the most cost-effective way to get maximum life cover. For a 35-year-old, a &#8377;1 crore term plan typically costs under &#8377;1,000/month.'},
+  savings:{low:'Participating Whole Life Plan (Paid-Up Additions)',medium:'Guaranteed Savings Plan',high:'Guaranteed Savings Plan',note:'Participating plans with paid-up additions offer non-market-linked growth with life cover. Guaranteed savings plans offer fixed maturity values. Both are tax-free under Section 10(10D).'},
+  retirement:{low:'Pension Plan / Annuity',medium:'Pension Plan + Term Insurance',high:'ULIP with Pension Option',note:'A pension plan converts your corpus into a regular income stream post-retirement. Pair it with term insurance during your working years for complete protection.'},
+  child:{low:'Child Endowment Plan with WoP',medium:'Child ULIP with WoP',high:'SIP + Term Insurance separately',note:'The Waiver of Premium (WoP) rider is essential: if you pass away during the policy term, the insurer waives future premiums and the plan continues to fund your child\'s goal.'},
+  wealth:{low:'ULIP (balanced fund option)',medium:'ULIP (growth fund option)',high:'ULIP (equity fund option)',note:'ULIPs combine market-linked investment with life cover. The equity fund option gives maximum growth potential. Switch funds without tax implications inside the ULIP.'},
+  income:{low:'Money-Back Plan',medium:'Money-Back Plan',high:'ULIP with Systematic Withdrawal',note:'Money-back plans pay a percentage of sum assured at regular intervals during the policy term, giving you predictable cash flows at key milestones.'},
+  health:{low:'Health Insurance Family Floater + Critical Illness',medium:'Health Insurance + Super Top-up',high:'Health Insurance + Cancer Cover + CI',note:'A basic health floater covers hospitalisation. Add a Super Top-up for medical inflation protection. A Critical Illness plan pays a lump sum on diagnosis — covers income loss during recovery, not just hospital bills.'},
+  business:{low:'Keyman Insurance (Term)',medium:'Keyman Insurance (Term) + Business Continuity',high:'Keyman Insurance + MWPA Cover',note:'Keyman insurance protects the business against the financial impact of losing a critical person. The business is the proposer and beneficiary. Premiums are treated as a business expense.'}
+};
+
+(function initCatGoals(){
+  var html='';
+  CAT_GOALS.forEach(function(g){
+    html+='<div id="cg-'+g.id+'" onclick="selectGoal(\''+g.id+'\')" style="background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:12px;cursor:pointer;transition:all .15s;text-align:center">'
+      +'<div style="font-size:22px;margin-bottom:6px">'+g.icon+'</div>'
+      +'<div style="font-size:11px;font-weight:600;color:var(--text);line-height:1.4">'+g.label+'</div>'
+      +'</div>';
+  });
+  var el=document.getElementById('catGoals');
+  if(el) el.innerHTML=html;
+})();
+
+function selectGoal(id){
+  catSelected=id;
+  document.querySelectorAll('[id^="cg-"]').forEach(function(el){
+    el.style.borderColor='var(--border)';
+    el.style.background='var(--white)';
+  });
+  var el=document.getElementById('cg-'+id);
+  if(el){el.style.borderColor='var(--gold)';el.style.background='#FFFBEB';}
+}
+
+var catData={};
+
+function calcCat(){
+  if(!catSelected){alert('Please select a goal first.');return;}
+  var age=gn('c-age'),dep=gn('c-dep'),hor=document.getElementById('c-hor').value,risk=document.getElementById('c-risk').value;
+  var logic=CAT_LOGIC[catSelected];
+  var rec=logic[risk]||logic['medium'];
+  var goal=CAT_GOALS.find(function(g){return g.id===catSelected;});
+  catData={catSelected,age,dep,hor,risk,rec,goalLabel:goal?goal.label:''};
+
+  document.getElementById('catDiag').innerHTML=
+    'Based on your goal of <span class="g">'+goal.label+'</span> with a '+risk+' risk comfort and '+hor.replace('_',' ')+' horizon, the recommended product category is <span class="g">'+rec+'</span>.';
+
+  // Category card
+  var noteHtml=logic.note||'';
+  var catCardHtml='<div style="background:var(--white);border:1.5px solid var(--gold);border-radius:var(--radius);padding:18px;margin-bottom:10px">'
+    +'<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:4px">Recommended category</div>'
+    +'<div style="font-size:18px;font-weight:900;color:var(--navy);margin-bottom:10px">'+rec+'</div>'
+    +'<div style="font-size:12px;color:var(--sub);line-height:1.6;border-top:1px solid var(--border);padding-top:10px">'+noteHtml+'</div>'
+    +'</div>';
+
+  // Additional cards based on goal
+  if(dep>0 && catSelected!=='protection'){
+    catCardHtml+='<div style="background:#FFFBEB;border:1px solid #FCD34D;border-radius:10px;padding:14px;margin-bottom:10px">'
+      +'<div style="font-size:11px;font-weight:700;color:#92400E;margin-bottom:4px">Also consider for your dependants</div>'
+      +'<div style="font-size:12px;color:#78350F;line-height:1.6">You have '+dep+' dependant(s). Regardless of your savings or investment goal, a pure term life insurance plan is essential to ensure your family\'s financial continuity if you are no longer around. Cost: typically under &#8377;1,000/month for &#8377;1 crore cover at age '+age+'.</div>'
+      +'</div>';
+  }
+  catCardHtml+='<div style="background:#F0F9FF;border:1px solid #BAE6FD;border-radius:10px;padding:14px">'
+    +'<div style="font-size:11px;font-weight:700;color:#0369A1;margin-bottom:4px">Important reminder</div>'
+    +'<div style="font-size:12px;color:#0C4A6E;line-height:1.6">This tool recommends a product category, not a specific insurer or product. Before purchasing any insurance product, verify the insurer\'s Claim Settlement Ratio (above 98%) and Solvency Margin (above 1.5) from IRDAI\'s latest annual report. Always read the policy document carefully.</div>'
+    +'</div>';
+
+  document.getElementById('catCards').innerHTML=catCardHtml;
+  document.getElementById('catRes').classList.add('on');
+  document.getElementById('catWa').classList.add('on');
+  document.getElementById('catAct').style.display='flex';
+  fab('Hi, I used the Product Category Finder at advisordesk.humanlifevalue.in. My goal: '+goal.label+'. Risk comfort: '+risk+'. Recommended category: '+rec+'. Would like to understand which specific plan suits me.');
+  setTimeout(()=>document.getElementById('catRes').scrollIntoView({behavior:'smooth',block:'start'}),100);
+}
+
+function subCatWa(){
+  var n=document.getElementById('cw-n').value.trim(),p=document.getElementById('cw-p').value.trim();
+  if(!n||!p){alert('Please enter your name and phone.');return;}
+  var d=catData;
+  var msg='Hi, I am '+n+' ('+p+'). I used the Product Category Finder at advisordesk.humanlifevalue.in. My goal: '+d.goalLabel+'. Risk comfort: '+d.risk+'. Recommended category: '+d.rec+'. Would like to understand which specific plan suits my situation.';
+  document.getElementById('catWaForm').style.display='none';
+  document.getElementById('catWaOk').style.display='block';
+  setTimeout(()=>window.open(waUrl(msg),'_blank','noopener'),800);
+}
 
 function openTool(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
